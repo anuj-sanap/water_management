@@ -70,6 +70,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get('returnTo') || '/projects';
+  const sessionExpired = searchParams.get('session') === 'expired';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -138,6 +139,13 @@ export default function LoginForm() {
           Enter your workplace credentials to access site water telemetry and balances.
         </p>
       </div>
+
+      {sessionExpired && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="font-medium">Your session expired or is no longer active. Please sign in again.</div>
+        </div>
+      )}
 
       {/* Inline Error Alert */}
       {errorMessage && (

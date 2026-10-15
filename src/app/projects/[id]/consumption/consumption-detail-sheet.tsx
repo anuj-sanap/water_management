@@ -134,7 +134,7 @@ export function ConsumptionDetailSheet({
                 </span>
                 <div>
                   <SheetTitle className="text-lg font-bold text-slate-900 dark:text-white">Consumption details</SheetTitle>
-                  <SheetDescription>{record.activity.name} · {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(record.date))}</SheetDescription>
+                  <SheetDescription>{record.activity.name} · {new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(record.date))}</SheetDescription>
                 </div>
               </div>
             </SheetHeader>

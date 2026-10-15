@@ -23,9 +23,15 @@ export default auth((req) => {
 
   // 2. Handle /login page: redirect to projects or returnTo if already logged in
   if (pathname === '/login') {
-    if (isLoggedIn) {
-      const returnTo = nextUrl.searchParams.get('returnTo');
-      return NextResponse.redirect(new URL(returnTo || '/projects', req.url));
+    if (isLoggedIn && nextUrl.searchParams.get('session') !== 'expired') {
+      const returnTo = nextUrl.searchParams.get('returnTo') || '/projects';
+      const destination = new URL(returnTo, req.url);
+      if (destination.origin !== nextUrl.origin) {
+        destination.pathname = '/projects';
+        destination.search = '';
+        destination.hash = '';
+      }
+      return NextResponse.redirect(destination);
     }
     return NextResponse.next();
   }

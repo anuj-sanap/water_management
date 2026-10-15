@@ -273,7 +273,11 @@ export function ConsumptionFormSheet({
 
   return (
     <Sheet open onOpenChange={(open) => { if (!open && !isPending) onClose(); }}>
-      <SheetContent side="right" className="h-[100dvh] w-screen max-w-none gap-0 rounded-none border-0 p-0 sm:w-[min(100vw,58rem)] sm:max-w-5xl sm:rounded-l-2xl sm:border sm:border-border">
+      <SheetContent
+        side="right"
+        className="h-[100dvh] w-screen gap-0 rounded-none border-0 p-0 sm:rounded-l-2xl sm:border sm:border-border"
+        style={{ width: 'min(100vw, 58rem)', maxWidth: 'min(100vw, 58rem)' }}
+      >
         <SheetHeader className="border-b border-slate-200 px-5 py-4 pr-14 dark:border-slate-800">
           <SheetTitle className="text-lg font-bold text-slate-900 dark:text-white">
             {record ? 'Edit consumption' : template ? 'Quick add consumption' : 'Add consumption'}
@@ -282,8 +286,8 @@ export function ConsumptionFormSheet({
         </SheetHeader>
 
         <form onSubmit={(event) => { event.preventDefault(); submit('save'); }} className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="@container min-h-0 flex-1 overflow-y-auto">
+          <div className="grid gap-5 p-4 sm:p-5 @2xl:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="space-y-5">
               <section className="space-y-3">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">1. Delivery details</h2>
@@ -435,7 +439,7 @@ export function ConsumptionFormSheet({
               </label>
             </div>
 
-            <aside className="sticky bottom-0 self-start lg:top-4">
+            <aside className="self-start @2xl:sticky @2xl:top-4">
               <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 shadow-sm dark:border-sky-900 dark:bg-slate-900">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">Live result</h2>

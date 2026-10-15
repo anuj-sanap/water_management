@@ -73,18 +73,18 @@ function localDateString(date = new Date()) {
 }
 
 function dateLabel(date: string) {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(date));
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(date));
 }
 
 function volumeLabel(volumeM3: number) {
-  return `${new Intl.NumberFormat(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(volumeM3)} m³`;
+  return `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(volumeM3)} m³`;
 }
 
 function UnitValue({ volumeM3, volumeLitres }: { volumeM3: number; volumeLitres: number }) {
   if (volumeM3 < 1) {
     return (
       <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
-        {new Intl.NumberFormat().format(volumeLitres)} L
+        {new Intl.NumberFormat('en-US').format(volumeLitres)} L
         <span className="ml-1 text-xs font-normal text-slate-500">({volumeLabel(volumeM3)})</span>
       </span>
     );
@@ -92,7 +92,7 @@ function UnitValue({ volumeM3, volumeLitres }: { volumeM3: number; volumeLitres:
   return (
     <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
       {volumeLabel(volumeM3)}
-      <span className="ml-1 text-xs font-normal text-slate-500">({new Intl.NumberFormat().format(volumeLitres)} L)</span>
+      <span className="ml-1 text-xs font-normal text-slate-500">({new Intl.NumberFormat('en-US').format(volumeLitres)} L)</span>
     </span>
   );
 }

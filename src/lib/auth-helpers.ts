@@ -17,13 +17,22 @@ export interface AuthenticatedUser {
 export async function requireUser(): Promise<AuthenticatedUser> {
   const session = await auth();
   if (!session?.user?.id || !session?.user?.role) {
-    redirect('/login');
+    redirect('/login?session=expired');
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true, email: true, role: true, active: true },
+  });
+  if (!user?.active) {
+    redirect('/login?session=expired');
+  }
+
   return {
-    id: session.user.id,
-    name: session.user.name || '',
-    email: session.user.email || '',
-    role: session.user.role as Role,
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
   };
 }
 

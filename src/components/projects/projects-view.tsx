@@ -118,7 +118,7 @@ export function ProjectsView({ projects, userRole }: ProjectsViewProps) {
 
   function formatDateRange(startDateStr: string, endDateStr: string | null) {
     const start = new Date(startDateStr);
-    const startFmt = start.toLocaleDateString(undefined, {
+    const startFmt = start.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -129,7 +129,7 @@ export function ProjectsView({ projects, userRole }: ProjectsViewProps) {
     }
 
     const end = new Date(endDateStr);
-    const endFmt = end.toLocaleDateString(undefined, {
+    const endFmt = end.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
