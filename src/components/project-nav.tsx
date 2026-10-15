@@ -122,7 +122,6 @@ export function ProjectNav({ projectId, role, openAlertsCount }: ProjectNavProps
             <Link
               key={item.label}
               href={item.href}
-              prefetch={false}
               className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
                 item.active
                   ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs'

@@ -86,7 +86,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
         <nav className="hidden lg:flex items-center gap-1">
           <Link
             href="/projects"
-            prefetch={false}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               pathname === '/projects' || pathname.startsWith('/projects/new')
                 ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -98,7 +97,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
           </Link>
           <Link
             href={dashboardHref}
-            prefetch={false}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               pathname.startsWith('/dashboard')
                 ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -110,7 +108,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
           </Link>
           <Link
             href={analyticsHref}
-            prefetch={false}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               pathname.startsWith('/analytics') || pathname.endsWith('/analytics')
                 ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -122,7 +119,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
           </Link>
           <Link
             href={alertsHref}
-            prefetch={false}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               pathname.startsWith('/alerts')
                 ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -140,7 +136,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
           {(user.role === 'PROJECT_MANAGER' || user.role === 'AUDITOR') && (
             <Link
               href="/audit-log"
-              prefetch={false}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 pathname.startsWith('/audit-log')
                   ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -154,7 +149,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
           {user.role === 'PROJECT_MANAGER' && (
             <Link
               href="/users"
-              prefetch={false}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 pathname.startsWith('/users')
                   ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400'
@@ -171,7 +165,6 @@ export function Navbar({ user, currentProjectId, projects = [], openAlertsCount 
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/settings"
-            prefetch={false}
             title="Settings & Calculations"
             className={`p-2 rounded-xl border transition-all ${
               pathname.startsWith('/settings')
