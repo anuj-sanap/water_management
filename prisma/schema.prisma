@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SITE_ENGINEER
+  PROJECT_MANAGER
+  AUDITOR
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
+enum SupplySource {
+  TANKER
+  MUNICIPAL
+  BOREWELL
+  STORAGE_TRANSFER
+  OTHER
+}
+
+enum VolumeUnit {
+  M3
+  L
+}
+
+enum ConsumptionMethod {
+  FLOW_METER
+  PIPE
+  DIRECT
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  projectMembers     ProjectMember[]
+  suppliesCreated    WaterSupply[]
+  consumptionCreated ConsumptionRecord[]
+  auditLogs          AuditLog[]
+  reportHistory      ReportHistory[]
+  resolvedAlerts     Alert[]        @relation("ResolvedAlerts")
+
+  @@index([role])
+}
+
+model Project {
+  id                          String        @id @default(uuid())
+  name                        String
+  location                    String
+  clientName                  String?
+  startDate                   DateTime
+  endDate                     DateTime?
+  status                      ProjectStatus @default(ACTIVE)
+  unaccountedThresholdPercent Float         @default(15)
+  assumedVelocityInPerSec     Float         @default(47.24)
+  createdAt                   DateTime      @default(now())
+
+  // Relations
+  members            ProjectMember[]
+  activityTypes      ActivityType[]
+  waterSupplies      WaterSupply[]
+  consumptionRecords ConsumptionRecord[]
+  alerts             Alert[]
+
+  @@index([status])
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model ActivityType {
+  id        String   @id @default(uuid())
+  projectId String?
+  name      String
+  color     String
+  active    Boolean  @default(true)
+
+  // Relations
+  project            Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  consumptionRecords ConsumptionRecord[]
+
+  @@index([projectId])
+}
+
+model WaterSupply {
+  id            String       @id @default(uuid())
+  projectId     String
+  date          DateTime
+  source        SupplySource
+  enteredVolume Float
+  enteredUnit   VolumeUnit
+  volumeM3      Float
+  supplier      String?
+  referenceNo   String?
+  notes         String?
+  createdById   String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, date])
+  @@index([projectId, source, date])
+  @@index([createdById])
+}
+
+model ConsumptionRecord {
+  id                  String            @id @default(uuid())
+  projectId           String
+  date                DateTime
+  activityTypeId      String
+  method              ConsumptionMethod
+  inputsJson          String
+  volumeM3            Float
+  usedAssumedVelocity Boolean
+  warningsJson        String?
+  locationOrZone      String?
+  notes               String?
+  createdById         String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id], onDelete: Restrict)
+  createdBy    User         @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, date])
+  @@index([projectId, activityTypeId, date])
+  @@index([projectId, method, date])
+  @@index([activityTypeId])
+  @@index([createdById])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  entity     String
+  entityId   String
+  beforeJson String?
+  afterJson  String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ReportHistory {
+  id            String   @id @default(uuid())
+  type          String
+  format        String
+  paramsJson    String
+  snapshotJson  String
+  createdById   String
+  createdAt     DateTime @default(now())
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById, createdAt])
+  @@index([createdAt])
+}
+
+enum AlertType {
+  SPIKE
+  DROP
+  NO_RECORDS
+  EXCEEDS_SUPPLY
+  HIGH_UNACCOUNTED
+  ASSUMED_VELOCITY_HEAVY
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Alert {
+  id             String        @id @default(uuid())
+  type           AlertType
+  severity       AlertSeverity @default(MEDIUM)
+  projectId      String
+  date           DateTime
+  message        String
+  status         AlertStatus   @default(OPEN)
+  resolvedById   String?
+  resolutionNote String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  resolvedBy User?   @relation("ResolvedAlerts", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, type, date])
+  @@index([projectId, status])
+  @@index([status])
+}

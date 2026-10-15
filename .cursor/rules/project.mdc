@@ -1,0 +1,52 @@
+---
+description: Project-wide product, stack, calculation, domain, UX, and code rules for the Construction Site Water Management System.
+alwaysApply: true
+---
+
+# Construction Site Water Management System
+
+Web app for site engineers and project managers to record water **supply** and **usage** per construction activity, calculate totals and unaccounted water, view dashboards/charts, and generate reports.
+
+**Roles:** `SITE_ENGINEER`, `PROJECT_MANAGER`, `AUDITOR`.
+
+**Activities:** concrete mixing, curing, plastering, equipment washing, dust suppression, other.
+
+## Stack
+
+Next.js App Router + TypeScript (strict), Tailwind CSS, shadcn/ui, lucide-react, Recharts, Prisma + SQLite (schema must stay Postgres-compatible), Auth.js (credentials), zod, react-hook-form, date-fns, vitest.
+
+## Calculation engine (critical)
+
+- `src/lib/engine/waterCalculations.js` is the **single source of truth** for ALL volume math. Never re-implement formulas elsewhere.
+- Keep it **plain JS, CommonJS, unchanged**. Public API is typed in `src/lib/engine/waterCalculations.d.ts`. Keep existing tests running.
+- If the engine still lives at `waterCalculations.js` (repo root), **move it** to `src/lib/engine/waterCalculations.js` (unchanged), add the `.d.ts`, and keep tests green.
+- All calculations run **server-side** through this engine. Client may call a preview endpoint; stored `volumeM3` is **always recomputed on the server**. Never trust client-calculated numbers.
+- Store volumes as **m³ (float)**. Display **litres when volume < 1 m³**, otherwise m³, with a unit toggle.
+- Engine results look like `{ valid, values, units, errors[], warnings[] }`. Surface `errors` next to the matching form field (`error.field`). Show `warnings` visibly.
+
+```ts
+// ❌ BAD — client or duplicate formula
+const volumeM3 = (flowLps * seconds) / 1000;
+await save({ volumeM3 });
+
+// ✅ GOOD — server recomputes via engine
+const result = calculateWater(input); // from src/lib/engine/waterCalculations.js
+if (!result.valid) return fieldErrors(result.errors);
+await save({ volumeM3: result.values.volumeM3 });
+```
+
+## Domain
+
+- **Never** label unaccounted water as "wastage" or "loss" in the UI. Use **"Unaccounted water"** with tooltip: "Difference between supplied water and recorded consumption. May include leakage, unmetered use, meter error, storage change, evaporation or recording gaps."
+- **47.24 in/s pipe velocity is an ASSUMED default**, never a measurement. If a record used it, show an amber **"Assumed velocity"** badge.
+- Consumption exceeding supply is a **data-quality alert**, not silently clamped.
+
+## UX
+
+Clean, modern, professional dashboard. Consistent spacing. Mobile-first responsive (engineers on phones). Light and dark mode. Every page: loading skeletons, empty states with a CTA, friendly errors. Accessible: labels, focus rings, keyboard nav, WCAG AA contrast. Inline form validation. Confirm destructive actions. Toasts for success/failure. No horizontal page scroll.
+
+## Code
+
+- Small reusable components; feature folders: `src/features/<name>`.
+- Server actions or route handlers with **zod** validation; **role checks on every** server action and route.
+- No `any`, no dead code, meaningful names. Comments only for non-obvious logic.
