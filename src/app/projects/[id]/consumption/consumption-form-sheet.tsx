@@ -157,8 +157,17 @@ export function ConsumptionFormSheet({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const selectedActivity = activities.find((activity) => activity.id === values.activityTypeId);
+  const hasMeasurementInput = values.method === 'DIRECT'
+    ? values.volumeLitres.trim() !== ''
+    : values.method === 'FLOW_METER'
+      ? values.flowRate.trim() !== '' && values.flowTime.trim() !== ''
+      : values.diameterInches.trim() !== '' &&
+        values.pipeTime.trim() !== '' &&
+        (values.useDefaultVelocity || values.velocityInPerSec.trim() !== '');
 
   useEffect(() => {
+    if (!hasMeasurementInput) return;
+
     let active = true;
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
@@ -197,7 +206,7 @@ export function ConsumptionFormSheet({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [projectId, values]);
+  }, [hasMeasurementInput, projectId, values]);
 
   const update = <K extends keyof ConsumptionFormValues>(field: K, value: ConsumptionFormValues[K]) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -208,7 +217,9 @@ export function ConsumptionFormSheet({
     });
   };
 
-  const errorFor = (field: string) => formErrors[field] ?? preview?.errors.find((error) => error.field === field)?.message;
+  const errorFor = (field: string) =>
+    formErrors[field] ??
+    (hasMeasurementInput ? preview?.errors.find((error) => error.field === field)?.message : undefined);
 
   const submit = (mode: 'save' | 'another') => {
     setFormErrors({});
@@ -428,10 +439,10 @@ export function ConsumptionFormSheet({
               <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 shadow-sm dark:border-sky-900 dark:bg-slate-900">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">Live result</h2>
-                  {preview && !preview.valid && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-800 dark:bg-rose-950 dark:text-rose-200">Needs attention</span>}
+                  {hasMeasurementInput && preview && !preview.valid && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-800 dark:bg-rose-950 dark:text-rose-200">Needs attention</span>}
                 </div>
-                {previewError && <p className="text-xs text-destructive" role="alert">{previewError}</p>}
-                {preview?.valid && preview.values && (
+                {hasMeasurementInput && previewError && <p className="text-xs text-destructive" role="alert">{previewError}</p>}
+                {hasMeasurementInput && preview?.valid && preview.values && (
                   <>
                     <p className="text-2xl font-black tabular-nums text-sky-900 dark:text-sky-100">
                       {new Intl.NumberFormat(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(Number(preview.values.volumeM3))} m³
@@ -454,17 +465,23 @@ export function ConsumptionFormSheet({
                     </div>
                   </>
                 )}
-                {preview && !preview.valid && (
+                {hasMeasurementInput && preview && !preview.valid && (
                   <ul className="space-y-1 text-xs text-destructive">
                     {preview.errors.map((error, index) => (
                       <li key={`${error.field}-${index}`}><span className="font-semibold">{error.field}:</span> {error.message}</li>
                     ))}
                   </ul>
                 )}
-                {!preview && !previewError && (
-                  <div className="py-2 text-sm text-slate-500">Enter measurement details to calculate volume.</div>
-                )}
-                {preview?.warnings.map((warning, index) => (
+                {!hasMeasurementInput ? (
+                  <div className="py-2 text-sm text-slate-500">
+                    {values.method === 'DIRECT'
+                      ? 'Enter a volume in litres to calculate the water volume.'
+                      : 'Enter measurement details to calculate volume.'}
+                  </div>
+                ) : !preview && !previewError ? (
+                  <div className="py-2 text-sm text-slate-500">Calculating volume…</div>
+                ) : null}
+                {hasMeasurementInput && preview?.warnings.map((warning, index) => (
                   <p key={index} className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-100 p-2 text-xs text-amber-950 dark:bg-amber-950 dark:text-amber-100">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{warning.message}
                   </p>

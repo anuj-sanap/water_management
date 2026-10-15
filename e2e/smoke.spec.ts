@@ -59,9 +59,12 @@ for (const method of [
     const projectId = await openProject(page, 'Apex Heights');
     await page.goto(`/projects/${projectId}/consumption`);
     await page.getByRole('button', { name: 'Add consumption' }).click();
-    await page.getByRole('button', { name: new RegExp(method.label) }).click();
+    await page.getByRole('dialog').getByRole('button', { name: new RegExp(method.label) }).click();
     for (const [label, value] of method.fields) {
       await page.getByLabel(label, { exact: true }).fill(value);
+    }
+    if (method.label === 'Direct entry') {
+      await expect(page.getByText('1.000 m³', { exact: true })).toBeVisible();
     }
     await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Consumption saved.')).toBeVisible();
